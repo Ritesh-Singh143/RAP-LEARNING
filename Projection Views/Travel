@@ -1,0 +1,38 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Consumption View for Travel'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity ZC_TRAVEL_RS1
+  provider contract transactional_query
+  as projection on ZI_TRAVEL_RS1
+{
+  key TravelId,
+      @ObjectModel.text.element: [ 'Agency_Name' ]
+      AgencyId,
+      _agency.Name        as Agency_Name,
+      @ObjectModel.text.element: [ 'Customer_Name' ]
+      //@UI.textArrangement: #TEXT_ONLY
+      CustomerId,
+      _customer.last_name as Customer_Name,
+      BeginDate,
+      EndDate,
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      BookingFee,
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      TotalPrice,
+      CurrencyCode,
+      Description,
+      @ObjectModel.text.element: [ 'Status' ]
+      OverallStatus,
+      _status._Text.Text  as status : localized,
+      CreatedBy,
+      CreatedAt,
+      LastChangedBy,
+      LastChangedAt,
+      /* Associations */
+      _agency,
+      _booking : redirected to composition child ZC_BOOKING_RS1,
+      _currency,
+      _customer,
+      _status
+}
