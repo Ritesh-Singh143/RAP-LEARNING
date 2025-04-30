@@ -1,0 +1,6 @@
+@EndUserText.label: 'Service Definition'
+define service Z_EXPOSE_TRAVEL_RS {
+  expose ZC_TRAVEL_RS1;
+  expose ZC_BOOKING_RS1;
+  expose ZC_BOOKSUPPL_RS1;
+}
