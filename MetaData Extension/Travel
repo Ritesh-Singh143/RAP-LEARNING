@@ -1,0 +1,64 @@
+@Metadata.layer: #PARTNER
+@Search.searchable: true
+@UI:{ headerInfo:{ typeName: 'Travel',
+                   typeNamePlural: 'Travels',
+                   description:{ type: #STANDARD, value: 'TravelId' } },
+                   presentationVariant: [{ sortOrder: [{ by: 'TravelId',direction: #ASC }] }] }
+annotate entity ZC_TRAVEL_RS1 with
+{
+  @UI.facet: [{ id : 'Travel',
+                type: #IDENTIFICATION_REFERENCE,
+                purpose: #STANDARD,
+                label : 'Travel',
+                position: 10 },
+                { id : 'Booking',
+                  type: #LINEITEM_REFERENCE,
+                  purpose: #STANDARD,
+                  label : 'Booking',
+                  position: 20,
+                  targetElement: '_booking' }]
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 10, label: 'Travel ID' },{ dataAction: 'copyRecord', type: #FOR_ACTION, label: 'Copy Record' }],
+                        selectionField: [{ position: 10 }], identification: [{ position: 10, label: 'Travel ID' }] }
+  TravelId;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 20, label: 'Agency ID' },{ dataAction: 'createInstance', type: #FOR_ACTION, label: 'Create Instance' }],
+        selectionField: [{ position: 20 }],
+        identification: [{ position: 20, label: 'Agency ID' }] }
+  AgencyId;
+  @UI:{ lineItem: [{ position: 21, label: 'Agency Name' },{ dataAction: 'rejectTravel', type: #FOR_ACTION, label: 'Reject Travel' }],identification: [{ position: 21, label: 'Agency Name' }] }
+  Agency_Name;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 30, label: 'Customer ID' }],selectionField: [{ position: 30 }],identification: [{ position: 30, label: 'Customer ID' }] }
+  CustomerId;
+  @UI:{ lineItem: [{ position: 31, label: 'Customer Name' }],identification: [{ position: 31, label: 'Customer Name' }] }
+  Customer_Name;
+  @UI:{ lineItem: [{ position: 40, label: 'Begin Date' }],identification: [{  position: 40, label: 'Begin Date' }] }
+  BeginDate;
+  @UI:{ lineItem: [{ position: 50, label: 'End Date' }],identification: [{ position: 50, label: 'End Date' }] }
+  EndDate;
+  @UI:{ lineItem: [{ position: 60, label: 'Booking Fare' }],identification: [{ position: 60, label: 'Booking Fare' }] }
+  BookingFee;
+  @UI:{ lineItem: [{ position: 70, label: 'Total Price' }],identification: [{ position: 70, label: 'Total Price'  }] }
+  TotalPrice;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 80, label: 'Currency Code' }],identification: [{ position: 80, label: 'Currency Code' }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: 'I_CURRENCY',element: 'Currency' } }]
+  CurrencyCode;
+  @UI:{ lineItem: [{ position: 90, label: 'Description' }],identification: [{ position: 90, label: 'Description'  }] }
+  Description;
+  @UI:{ lineItem: [{ position: 100, label: 'Status'},{ dataAction: 'AcceptTravel', type: #FOR_ACTION, label: 'Accept Travel' } ],identification: [{ position: 100, label: 'Status' }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_Overall_Status_VH',element: 'OverallStatus' } }]
+  OverallStatus;
+  @UI:{ lineItem: [{ position: 110, label: 'Created By' }],identification: [{ position: 110, label: 'Created By' }] }
+  CreatedBy;
+  @UI:{ lineItem: [{ position: 120, label: 'Created At' }],identification: [{ position: 120, label: 'Created At' }] }
+  CreatedAt;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 130, label: 'Last Changed By' }] }
+  LastChangedBy;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 140, label: 'Last Changed At' }] }
+  LastChangedAt;
+
+}
