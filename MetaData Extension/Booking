@@ -1,0 +1,57 @@
+@Metadata.layer: #PARTNER
+@Search.searchable: true
+@UI:{ headerInfo:{ typeName: 'Booking',
+                   typeNamePlural: 'Bookingss',
+                   description:{ type: #STANDARD, value: 'BookingId',label: 'Booking ID' } },
+                   presentationVariant: [{ sortOrder: [{ by: 'BookingId',direction: #ASC }] }] }
+annotate entity ZC_BOOKING_RS1 with
+{
+  @UI.facet: [{ id : 'Booking',
+                type: #IDENTIFICATION_REFERENCE,
+                purpose: #STANDARD,
+                label : 'Booking',
+                position: 10 },
+              { id : 'BookingSupplement',
+                type: #LINEITEM_REFERENCE,
+                purpose: #STANDARD,
+                label : 'BookingSupplement',
+                position: 20,
+                targetElement: '_booksuppl' }]
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 10, label: 'Travel ID' }],identification: [{ position: 10, label: 'Travel ID' }] }
+  TravelId;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 20, label: 'Booking ID' }],selectionField: [{ position: 20 }],identification: [{ position: 20, label: 'Booking ID'  }] }
+  BookingId;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 30, label: 'Booking Date' }],identification: [{ position: 30, label: 'Booking Date' }] }
+  BookingDate;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 40, label: 'Customer Id' }],selectionField: [{ position: 40 }],identification: [{ position: 40, label: 'Customer Id'  }] }
+  CustomerId;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 50, label: 'Carrier Id' }],selectionField: [{ position: 50 }],identification: [{ position: 50, label: 'Carrier Id' }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_CARRIER',element: 'AirlineID' } }]
+  CarrierId;
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 51, label: 'AirlineID' }],selectionField: [{ position: 51 }],identification: [{ position: 51, label: 'AirlineID' }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_CARRIER',element: 'AirlineID' } }]
+  AirelineId;
+  @UI:{ lineItem: [{ position: 52, label: 'Carrier Name' }],identification: [{ position: 52, label: 'Carrier Name' }] }
+  Carrier_Name;
+  @UI:{ lineItem: [{ position: 60, label: 'Connection Id' }],selectionField: [{ position: 60 }],identification: [{ position: 60, label: 'Connection Id' }] }
+  ConnectionId;
+  @UI:{ lineItem: [{ position: 70, label: 'Flight Date' }],identification: [{ position: 70, label: 'Flight Date' }] }
+  FlightDate;
+  @UI:{ lineItem: [{ position: 80, label: 'Flight Price' }],identification: [{ position: 80, label: 'Flight Price' }] }
+  FlightPrice;
+  @UI:{ lineItem: [{ position: 90, label: 'Currency Code' }],identification: [{  position: 90, label: 'Currency Code' }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: 'I_CURRENCY',element: 'Currency' } }]
+  CurrencyCode;
+  @UI:{ lineItem: [{ position: 100, label: 'Booking Status' }],identification: [{ position: 100, label: 'Booking Status' }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_Booking_Status_VH',element: 'BookingStatus' } }]
+  BookingStatus;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 110, label: 'Last Changed At' }],identification: [{ position: 110, label: 'Last Changed At' }] }
+  LastChangedAt;
+}
