@@ -1,0 +1,42 @@
+projection;
+strict ( 2 );
+use draft;
+
+define behavior for ZC_TRAVEL_RS1 alias Travel
+{
+  use create;
+  use update;
+  use delete;
+
+  use action AcceptTravel;
+  use action rejectTravel;
+
+  use action copyRecord;
+  use action createInstance;
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+
+  use association _booking { create; with draft; }
+}
+
+define behavior for ZC_BOOKING_RS1 alias Booking
+{
+  use update;
+  use delete;
+
+  use association _travel { with draft; }
+  use association _booksuppl { create; with draft; }
+}
+
+define behavior for ZC_BOOKSUPPL_RS1 alias BookingSuppl
+{
+  use update;
+  use delete;
+
+  use association _travel { with draft; }
+  use association _booking { with draft; }
+}
