@@ -1,0 +1,16 @@
+@EndUserText.label : 'Log table for Travel'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zrs_travel_log {
+
+  key client         : abap.clnt not null;
+  key change_id      : abap.raw(16) not null;
+  travel_id          : /dmo/travel_id not null;
+  changing_opertion  : abap.char(10);
+  changed_field_name : abap.char(32);
+  changed_value      : abap.char(32);
+  created_at         : timestampl;
+
+}
