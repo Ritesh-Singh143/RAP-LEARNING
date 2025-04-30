@@ -1,0 +1,21 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Consumption View for Booking Supplement'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define view entity ZC_BOOKSUPPL_RS1
+  as projection on ZI_BOOKSUPPL_RS1
+{
+  key TravelId,
+  key BookingId,
+  key BookingSupplementId,
+      SupplementId,
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      Price,
+      CurrencyCode,
+      LastChangedAt,
+      /* Associations */
+      _booking : redirected to parent ZC_BOOKING_RS1,
+      _supplement,
+      _travel  : redirected to ZC_TRAVEL_RS1,
+      _supplementText
+}
