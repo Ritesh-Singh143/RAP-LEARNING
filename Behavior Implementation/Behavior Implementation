@@ -1,0 +1,310 @@
+CLASS lsc_zi_travel_rs1 DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zi_travel_rs1 IMPLEMENTATION.
+
+  METHOD save_modified.
+
+    DATA: lt_travel_log   TYPE STANDARD TABLE OF zrs_travel_log,
+          lt_travel_log_c TYPE STANDARD TABLE OF zrs_travel_log.
+
+    IF create-travel IS NOT INITIAL.
+      lt_travel_log = CORRESPONDING #( create-travel MAPPING travel_id = TravelId ).
+
+      LOOP AT lt_travel_log ASSIGNING FIELD-SYMBOL(<lfs_travel_log>).
+
+        <lfs_travel_log>-changing_opertion = 'CREATE'.
+        GET TIME STAMP FIELD <lfs_travel_log>-created_at.
+
+        READ TABLE create-travel ASSIGNING FIELD-SYMBOL(<lfs_travel>) WITH TABLE KEY entity
+                                            COMPONENTS TravelId = <lfs_travel_log>-travel_id.
+        IF sy-subrc = 0.
+
+          IF <lfs_travel>-%control-AgencyId = cl_abap_behv=>flag_changed.
+
+            <lfs_travel_log>-changed_field_name = 'Agency ID'.
+            <lfs_travel_log>-changed_value = <lfs_travel>-AgencyId.
+            TRY.
+                <lfs_travel_log>-change_id = cl_system_uuid=>create_uuid_x16_static(  ).
+              CATCH cx_uuid_error.
+                "handle exception
+            ENDTRY.
+
+            lt_travel_log_c = VALUE #( BASE lt_travel_log_c ( <lfs_travel_log> ) ).
+
+          ENDIF.
+        ENDIF.
+
+      ENDLOOP.
+
+      INSERT zrs_travel_log FROM TABLE @lt_travel_log_c.
+
+    ENDIF.
+
+    IF update-travel IS NOT INITIAL.
+
+      lt_travel_log = CORRESPONDING #( update-travel MAPPING travel_id = TravelId ).
+
+      LOOP AT update-travel ASSIGNING FIELD-SYMBOL(<lfs_travel_update>).
+        ASSIGN lt_travel_log[ travel_id = <lfs_travel_update>-TravelId ] TO FIELD-SYMBOL(<lfs_update>).
+
+        <lfs_update>-changing_opertion = 'UPDATE'.
+        GET TIME STAMP FIELD <lfs_update>-created_at.
+
+        IF <lfs_travel_update>-%control-AgencyId = cl_abap_behv=>flag_changed.
+
+          <lfs_update>-changed_field_name = 'Agency ID'.
+          <lfs_update>-changed_value = <lfs_travel_update>-AgencyId.
+          TRY.
+              <lfs_update>-change_id = cl_system_uuid=>create_uuid_x16_static(  ).
+            CATCH cx_uuid_error.
+              "handle exception
+          ENDTRY.
+          INSERT zrs_travel_log FROM TABLE @lt_travel_log.
+        ENDIF.
+
+      ENDLOOP.
+
+
+    ENDIF.
+
+    IF delete-travel IS NOT INITIAL.
+
+    ENDIF.
+*************************************************************************
+    "Unmanaged Save for Booking Supplement
+*************************************************************************
+
+    DATA: lt_booksuppl TYPE STANDARD TABLE OF zrs_booksuppl_01.
+
+    IF create-bookingsuppl IS NOT INITIAL.
+
+      lt_booksuppl = CORRESPONDING #( create-bookingsuppl MAPPING FROM ENTITY ).
+
+      INSERT zrs_booksuppl_01 FROM TABLE @lt_booksuppl.
+    ENDIF.
+
+    IF update-bookingsuppl IS NOT INITIAL.
+    ENDIF.
+
+    IF delete-bookingsuppl IS NOT INITIAL.
+    ENDIF.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_bookingsuppl DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS validateSupplementId FOR VALIDATE ON SAVE
+      IMPORTING keys FOR BookingSuppl~validateSupplementId.
+
+ENDCLASS.
+
+CLASS lhc_bookingsuppl IMPLEMENTATION.
+
+  METHOD validateSupplementId.
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+     ENTITY BookingSuppl
+     FIELDS ( TravelId BookingId BookingSupplementId SupplementId )
+     WITH CORRESPONDING #( keys )
+     RESULT DATA(lt_bookingsuppl)
+     FAILED DATA(lt_failed)
+     REPORTED DATA(lt_reported).
+
+    LOOP AT lt_bookingsuppl INTO DATA(ls_bookingsuppl).
+      IF ls_bookingsuppl-TravelId IS NOT INITIAL AND ls_bookingsuppl-BookingId IS NOT INITIAL AND ls_bookingsuppl-BookingSupplementId IS NOT INITIAL AND ls_bookingsuppl-SupplementId IS INITIAL.
+        failed-bookingsuppl = VALUE #( ( %tky =  ls_bookingsuppl-%tky ) ).
+        reported-bookingsuppl = VALUE #( ( %tky = ls_bookingsuppl-%tky
+                                           %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                         text     = 'Fill mandatory field Supplement ID ' ) ) ).
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_booking DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS populatebookingDate FOR DETERMINE ON SAVE
+      IMPORTING keys FOR Booking~populatebookingDate.
+
+ENDCLASS.
+
+CLASS lhc_booking IMPLEMENTATION.
+
+  METHOD populatebookingDate.
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Booking
+    FIELDS ( TravelId BookingId CustomerId BookingDate )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_booking)
+    FAILED DATA(lt_failed)
+    REPORTED DATA(lt_reported).
+
+    CHECK lt_booking IS NOT INITIAL.
+
+    LOOP AT lt_booking INTO DATA(ls_booking).
+      IF ls_booking-TravelId IS NOT INITIAL AND ls_booking-BookingId IS NOT INITIAL AND ls_booking-CustomerId IS NOT INITIAL.
+        MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+         ENTITY Booking
+         UPDATE
+        FIELDS ( BookingDate )
+        WITH VALUE #( ( %tky        = ls_booking-%tky
+                        BookingDate = cl_abap_context_info=>get_system_date( ) ) ).
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_Travel DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR Travel RESULT result.
+    METHODS acceptbooking FOR MODIFY
+      IMPORTING keys FOR ACTION travel~AcceptTravel RESULT result.
+
+    METHODS rejectbooking FOR MODIFY
+      IMPORTING keys FOR ACTION travel~rejectTravel RESULT result.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR travel RESULT result.
+    METHODS copyrecord FOR MODIFY
+      IMPORTING keys FOR ACTION travel~copyrecord.
+    METHODS createinstance FOR MODIFY
+      IMPORTING keys FOR ACTION travel~createinstance.
+
+ENDCLASS.
+
+CLASS lhc_Travel IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+
+  ENDMETHOD.
+
+  METHOD AcceptBooking.
+
+    MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Travel
+    UPDATE FIELDS ( OverallStatus )
+    WITH VALUE #( FOR key IN keys ( %tky          = key-%tky
+                                    OverallStatus = 'A' ) ).
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+        ENTITY Travel
+        FIELDS ( OverallStatus )
+        WITH CORRESPONDING #( keys )
+        RESULT DATA(lt_travel)
+        FAILED DATA(lt_failed)
+        REPORTED DATA(lt_reported).
+
+    result = VALUE #( FOR ls IN lt_travel
+                      ( %tky   = ls-%tky
+                        %param = ls ) ).
+  ENDMETHOD.
+
+  METHOD rejectBooking.
+    MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY Travel
+      UPDATE FIELDS ( OverallStatus )
+      WITH VALUE #( FOR key IN keys ( %tky          = key-%tky
+                                      OverallStatus = '' ) ).
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Travel
+    FIELDS ( OverallStatus )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_travel)
+    FAILED DATA(lt_failed)
+    REPORTED DATA(lt_reported).
+
+    result = VALUE #( FOR ls IN lt_travel
+                      ( %tky   = ls-%tky
+                        %param = ls ) ).
+
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY Travel
+      FIELDS ( OverallStatus )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_travel)
+      FAILED DATA(lt_failed)
+      REPORTED DATA(lt_reported).
+
+    result = VALUE #(  FOR ls_travel IN lt_travel
+                       ( %tky = ls_travel-%tky
+                         %action-AcceptTravel = COND #( WHEN ls_travel-OverallStatus IS INITIAL THEN if_abap_behv=>fc-o-enabled ELSE if_abap_behv=>fc-o-disabled  )
+                         %action-rejectTravel = COND #( WHEN ls_travel-OverallStatus IS NOT INITIAL THEN if_abap_behv=>fc-o-enabled ELSE if_abap_behv=>fc-o-disabled  )
+                       )
+                    ) .
+  ENDMETHOD.
+
+  METHOD copyRecord.
+
+    DATA: lt_travel TYPE TABLE FOR CREATE zi_travel_rs1.
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY Travel
+      ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(travel).
+
+    LOOP AT travel ASSIGNING FIELD-SYMBOL(<lfs_travel>).
+
+      APPEND VALUE #( %cid      = keys[ KEY entity %key = <lfs_travel>-%key ]-%cid
+                      %is_draft = keys[ KEY entity %key = <lfs_travel>-%key ]-%param-%is_draft
+                      %data     = CORRESPONDING #( <lfs_travel> ) ) TO lt_travel ASSIGNING FIELD-SYMBOL(<lfs_travel2>).
+
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY Travel
+      CREATE FIELDS ( agencyid customerid BeginDate EndDate  BookingFee  TotalPrice CurrencyCode  Description OverallStatus CreatedBy CreatedAt )
+      WITH lt_travel
+      MAPPED mapped.
+
+  ENDMETHOD.
+
+  METHOD createInstance.
+    MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+        ENTITY Travel
+        CREATE FROM VALUE #( FOR <instance> IN keys ( %cid          = <instance>-%cid
+                                                      TravelId      = 155
+                                                      AgencyId      = 70028
+                                                      CustomerId    = 465
+                                                      BeginDate     = cl_abap_context_info=>get_system_date( )
+                                                      EndDate       = cl_abap_context_info=>get_system_date( )
+                                                      BookingFee    = '150.00'
+                                                      TotalPrice    = '200.00'
+                                                      CurrencyCode  = 'INR'
+                                                      Description   = 'Description'
+                                                      OverallStatus = 'A'
+                                                      CreatedBy     = 'Ritesh Singh'
+                                                      %control      = VALUE #(
+                                               TravelId      = if_abap_behv=>mk-on
+                                               AgencyId      = if_abap_behv=>mk-on
+                                               CustomerId    = if_abap_behv=>mk-on
+                                               BeginDate     = if_abap_behv=>mk-on
+                                               EndDate       = if_abap_behv=>mk-on
+                                               BookingFee    = if_abap_behv=>mk-on
+                                               TotalPrice    = if_abap_behv=>mk-on
+                                               CurrencyCode  = if_abap_behv=>mk-on
+                                               Description   = if_abap_behv=>mk-on
+                                               OverallStatus = if_abap_behv=>mk-on
+                                               CreatedBy     = if_abap_behv=>mk-on )
+                           ) )
+                                                       MAPPED mapped.
+  ENDMETHOD.
+
+ENDCLASS.
