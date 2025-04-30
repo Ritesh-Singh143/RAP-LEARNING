@@ -1,0 +1,27 @@
+@EndUserText.label : 'Booking Supplement'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zrs_booksuppl_01 {
+
+  key client                : abap.clnt not null;
+  @AbapCatalog.foreignKey.screenCheck : false
+  key travel_id             : /dmo/travel_id not null
+    with foreign key [0..*,1] zrs_travel_01
+      where client = zrs_booksuppl_01.client
+        and travel_id = zrs_booksuppl_01.travel_id;
+  @AbapCatalog.foreignKey.screenCheck : false
+  key booking_id            : /dmo/booking_id not null
+    with foreign key [0..*,1] zrs_booking_01
+      where client = zrs_booksuppl_01.client
+        and travel_id = zrs_booksuppl_01.travel_id
+        and booking_id = zrs_booksuppl_01.booking_id;
+  key booking_supplement_id : /dmo/booking_supplement_id not null;
+  supplement_id             : /dmo/supplement_id;
+  @Semantics.amount.currencyCode : '/dmo/booksuppl_m.currency_code'
+  price                     : /dmo/supplement_price;
+  currency_code             : /dmo/currency_code;
+  last_changed_at           : abp_locinst_lastchange_tstmpl;
+
+}
