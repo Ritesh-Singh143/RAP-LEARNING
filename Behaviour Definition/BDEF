@@ -12,10 +12,13 @@ total etag LastChangedAt
 authorization master ( instance )
 etag master LastChangedAt
 {
-  //field ( readonly ) TravelId;
   create;
   update;
   delete;
+
+  field ( readonly : update ) TravelId;
+  field ( readonly ) CreatedBy, LastChangedAt, LastChangedBy;
+  //field ( mandatory : create ) AgencyId, CustomerId;
 
   action ( features : instance ) rejectTravel result [1] $self;
   action ( features : instance ) AcceptTravel result [1] $self;
@@ -23,7 +26,15 @@ etag master LastChangedAt
   factory action copyRecord [1];
   static factory action createInstance [1];
 
-  association _booking { create; with draft; }
+  determination calculateTotalPrice on modify { field BookingFee; }
+
+  side effects
+  {
+    field BookingFee affects field TotalPrice;
+  }
+
+  association _booking { create ( features : instance ); with draft; }
+  //association _booksuppl {  with draft; }
 
   draft action Edit;
   draft action Activate optimized;
@@ -62,12 +73,21 @@ etag master LastChangedAt
 {
   update;
   delete;
-  field ( readonly ) TravelId; //BookingId;
+  field ( readonly ) TravelId, LastChangedAt;
+  field ( readonly : update ) BookingId;
+
+  field ( mandatory ) CarrierId, ConnectionId, FlightDate, BookingStatus;
 
   determination populatebookingDate on save { field TravelId, BookingId, CustomerId; create; }
+  determination calculateBookingFare on modify { field FlightPrice; create; update; delete; }
 
   association _travel { with draft; }
-  association _booksuppl { create; with draft; }
+  association _booksuppl { create ( features : instance ); with draft; }
+
+  side effects
+  {
+    field FlightPrice affects field _travel.BookingFee, field _travel.TotalPrice;
+  }
 
   mapping for zrs_booking_01
     {
@@ -96,11 +116,20 @@ etag master LastChangedAt
 {
   update;
   delete;
-  field ( readonly ) TravelId, BookingId;//BookingSupplementId;
+
+  field ( readonly ) TravelId, BookingId, LastChangedAt;
+  //field ( mandatory )  SupplementId,price;
+
   association _travel { with draft; }
   association _booking { with draft; }
 
   validation validateSupplementId on save { create; }
+  determination calculateBookingFare on modify { field Price; create; update; delete; }
+
+  side effects
+  {
+    field Price affects field _travel.BookingFee, field _travel.TotalPrice;
+  }
 
   mapping for zrs_booksuppl_01
     {
