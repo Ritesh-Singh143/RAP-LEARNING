@@ -16,23 +16,29 @@ annotate entity ZC_BOOKING_RS1 with
                 purpose: #STANDARD,
                 label : 'BookingSupplement',
                 position: 20,
-                targetElement: '_booksuppl' }]
+                targetElement: '_booksuppl'
+                 }]
   @Search.defaultSearchElement: true
   @UI:{ lineItem: [{ position: 10, label: 'Travel ID' }],identification: [{ position: 10, label: 'Travel ID' }] }
+        //fieldGroup: [{ qualifier: 'q2',position: 10 }] }
   TravelId;
   @Search.defaultSearchElement: true
   @UI:{ lineItem: [{ position: 20, label: 'Booking ID' }],selectionField: [{ position: 20 }],identification: [{ position: 20, label: 'Booking ID'  }] }
+        //fieldGroup: [{ qualifier: 'q2',position: 20 }] }
   BookingId;
   @Search.defaultSearchElement: true
   @UI:{ lineItem: [{ position: 30, label: 'Booking Date' }],identification: [{ position: 30, label: 'Booking Date' }] }
   BookingDate;
   @Search.defaultSearchElement: true
   @UI:{ lineItem: [{ position: 40, label: 'Customer Id' }],selectionField: [{ position: 40 }],identification: [{ position: 40, label: 'Customer Id'  }] }
+  @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_CUSTOMER',element: 'CustomerID' } }]
   CustomerId;
+  @UI.hidden: true
   @Search.defaultSearchElement: true
   @UI:{ lineItem: [{ position: 50, label: 'Carrier Id' }],selectionField: [{ position: 50 }],identification: [{ position: 50, label: 'Carrier Id' }] }
   @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_CARRIER',element: 'AirlineID' } }]
   CarrierId;
+  @UI.hidden: true
   @Search.defaultSearchElement: true
   @UI:{ lineItem: [{ position: 51, label: 'AirlineID' }],selectionField: [{ position: 51 }],identification: [{ position: 51, label: 'AirlineID' }] }
   @Consumption.valueHelpDefinition: [{ entity :{ name: '/DMO/I_CARRIER',element: 'AirlineID' } }]
