@@ -90,9 +90,21 @@ CLASS lsc_zi_travel_rs1 IMPLEMENTATION.
     ENDIF.
 
     IF update-bookingsuppl IS NOT INITIAL.
+      lt_booksuppl = CORRESPONDING #( update-bookingsuppl MAPPING travel_id = TravelId
+                                                                  booking_id = BookingId
+                                                                  booking_supplement_id = BookingSupplementId
+                                                                  supplement_id = SupplementId
+                                                                  price = Price
+                                                                  currency_code = CurrencyCode ).
+
+      UPDATE zrs_booksuppl_01 FROM TABLE @lt_booksuppl.
     ENDIF.
 
     IF delete-bookingsuppl IS NOT INITIAL.
+
+      lt_booksuppl = CORRESPONDING #( delete-bookingsuppl MAPPING FROM ENTITY ).
+
+      DELETE zrs_booksuppl_01 FROM TABLE @lt_booksuppl.
     ENDIF.
 
   ENDMETHOD.
@@ -105,6 +117,8 @@ CLASS lhc_bookingsuppl DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS validateSupplementId FOR VALIDATE ON SAVE
       IMPORTING keys FOR BookingSuppl~validateSupplementId.
+    METHODS calculateBookingFare FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR BookingSuppl~calculateBookingFare.
 
 ENDCLASS.
 
@@ -129,6 +143,33 @@ CLASS lhc_bookingsuppl IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
+  METHOD calculateBookingFare.
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+     ENTITY Travel
+     FIELDS ( BookingFee )
+     WITH CORRESPONDING #( keys ) RESULT DATA(lt_travel).
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Travel BY \_booking
+    FIELDS ( FlightPrice CurrencyCode )
+    WITH CORRESPONDING #( keys ) RESULT DATA(lt_booking).
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY BookingSuppl
+    FIELDS ( Price )
+    WITH CORRESPONDING #( keys ) RESULT DATA(lt_booksuppl).
+
+    CHECK lt_travel IS NOT INITIAL AND lt_booking IS NOT INITIAL.
+
+    LOOP AT lt_travel INTO DATA(ls_travel).
+      MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY Travel
+      UPDATE FIELDS ( BookingFee ) WITH VALUE #( ( %tky             = ls_travel-%tky
+                                                   %data-BookingFee = REDUCE i( INIT x = 0 FOR ls_book IN lt_booking NEXT    x = x + ls_book-FlightPrice ) +
+                                               REDUCE i( INIT                        x = 0 FOR ls_books IN lt_booksuppl NEXT x = x + ls_books-Price ) ) ).
+    ENDLOOP.
+  ENDMETHOD.
+
 ENDCLASS.
 
 CLASS lhc_booking DEFINITION INHERITING FROM cl_abap_behavior_handler.
@@ -137,6 +178,10 @@ CLASS lhc_booking DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS populatebookingDate FOR DETERMINE ON SAVE
       IMPORTING keys FOR Booking~populatebookingDate.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR Booking RESULT result.
+    METHODS calculatebookingfare FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR booking~calculatebookingfare.
 
 ENDCLASS.
 
@@ -166,6 +211,50 @@ CLASS lhc_booking IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_instance_features.
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Booking
+    FIELDS ( TravelId BookingId BookingStatus )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_booking).
+
+    result = VALUE #( FOR ls_booking IN lt_booking
+                          ( %tky = ls_booking-%tky
+                            %features-%assoc-_booksuppl = COND #( WHEN ls_booking-BookingStatus = 'X' THEN if_abap_behv=>fc-o-disabled ELSE if_abap_behv=>fc-o-enabled  ) ) ).
+
+
+  ENDMETHOD.
+
+  METHOD calculateBookingFare.
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Travel
+    FIELDS ( BookingFee )
+    WITH CORRESPONDING #( keys ) RESULT DATA(lt_travel).
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY Travel BY \_booking
+    FIELDS ( FlightPrice CurrencyCode )
+    WITH CORRESPONDING #( keys ) RESULT DATA(lt_booking).
+
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+    ENTITY BookingSuppl
+    FIELDS ( Price )
+    WITH CORRESPONDING #( keys ) RESULT DATA(lt_books).
+
+    CHECK lt_travel IS NOT INITIAL AND lt_booking IS NOT INITIAL.
+
+
+    LOOP AT lt_travel INTO DATA(ls_travel).
+      MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY Travel
+      UPDATE FIELDS ( BookingFee ) WITH VALUE #( ( %tky             = ls_travel-%tky
+                                                   %data-BookingFee = REDUCE i( INIT x = 0 FOR ls_book IN lt_booking NEXT x = x + ls_book-FlightPrice ) +
+                                               REDUCE i( INIT                        x = 0 FOR ls_books IN lt_books NEXT  x = x + ls_books-Price ) ) ).
+    ENDLOOP.
+
+  ENDMETHOD.
+
 ENDCLASS.
 
 CLASS lhc_Travel DEFINITION INHERITING FROM cl_abap_behavior_handler.
@@ -184,6 +273,8 @@ CLASS lhc_Travel DEFINITION INHERITING FROM cl_abap_behavior_handler.
       IMPORTING keys FOR ACTION travel~copyrecord.
     METHODS createinstance FOR MODIFY
       IMPORTING keys FOR ACTION travel~createinstance.
+    METHODS calculatetotalprice FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR travel~calculatetotalprice.
 
 ENDCLASS.
 
@@ -219,7 +310,7 @@ CLASS lhc_Travel IMPLEMENTATION.
       ENTITY Travel
       UPDATE FIELDS ( OverallStatus )
       WITH VALUE #( FOR key IN keys ( %tky          = key-%tky
-                                      OverallStatus = '' ) ).
+                                      OverallStatus = 'X' ) ).
     READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
     ENTITY Travel
     FIELDS ( OverallStatus )
@@ -245,8 +336,9 @@ CLASS lhc_Travel IMPLEMENTATION.
 
     result = VALUE #(  FOR ls_travel IN lt_travel
                        ( %tky = ls_travel-%tky
-                         %action-AcceptTravel = COND #( WHEN ls_travel-OverallStatus IS INITIAL THEN if_abap_behv=>fc-o-enabled ELSE if_abap_behv=>fc-o-disabled  )
-                         %action-rejectTravel = COND #( WHEN ls_travel-OverallStatus IS NOT INITIAL THEN if_abap_behv=>fc-o-enabled ELSE if_abap_behv=>fc-o-disabled  )
+                         %features-%action-AcceptTravel = COND #( WHEN ls_travel-OverallStatus = 'A' THEN if_abap_behv=>fc-o-disabled ELSE if_abap_behv=>fc-o-enabled  )
+                         %features-%action-rejectTravel = COND #( WHEN ls_travel-OverallStatus = 'X' THEN if_abap_behv=>fc-o-disabled ELSE if_abap_behv=>fc-o-enabled )
+                         %features-%assoc-_booking      = COND #( WHEN ls_travel-OverallStatus = 'X' THEN if_abap_behv=>fc-o-disabled ELSE if_abap_behv=>fc-o-enabled )
                        )
                     ) .
   ENDMETHOD.
@@ -261,8 +353,8 @@ CLASS lhc_Travel IMPLEMENTATION.
       RESULT DATA(travel).
 
     LOOP AT travel ASSIGNING FIELD-SYMBOL(<lfs_travel>).
-
-      APPEND VALUE #( %cid      = keys[ KEY entity %key = <lfs_travel>-%key ]-%cid
+      "%cid      = keys[ KEY entity %key = <lfs_travel>-%key ]-%cid
+      APPEND VALUE #(
                       %is_draft = keys[ KEY entity %key = <lfs_travel>-%key ]-%param-%is_draft
                       %data     = CORRESPONDING #( <lfs_travel> ) ) TO lt_travel ASSIGNING FIELD-SYMBOL(<lfs_travel2>).
 
@@ -270,7 +362,7 @@ CLASS lhc_Travel IMPLEMENTATION.
 
     MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
       ENTITY Travel
-      CREATE FIELDS ( agencyid customerid BeginDate EndDate  BookingFee  TotalPrice CurrencyCode  Description OverallStatus CreatedBy CreatedAt )
+      CREATE AUTO FILL CID FIELDS ( agencyid customerid BeginDate EndDate  BookingFee  TotalPrice CurrencyCode  Description OverallStatus CreatedBy CreatedAt )
       WITH lt_travel
       MAPPED mapped.
 
@@ -280,7 +372,7 @@ CLASS lhc_Travel IMPLEMENTATION.
     MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
         ENTITY Travel
         CREATE FROM VALUE #( FOR <instance> IN keys ( %cid          = <instance>-%cid
-                                                      TravelId      = 155
+                                                      TravelId      = 156
                                                       AgencyId      = 70028
                                                       CustomerId    = 465
                                                       BeginDate     = cl_abap_context_info=>get_system_date( )
@@ -305,6 +397,23 @@ CLASS lhc_Travel IMPLEMENTATION.
                                                CreatedBy     = if_abap_behv=>mk-on )
                            ) )
                                                        MAPPED mapped.
+  ENDMETHOD.
+
+  METHOD calculateTotalPrice.
+    READ ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY travel
+      FIELDS ( BookingFee TotalPrice )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_travel).
+    CHECK lt_travel IS NOT INITIAL.
+
+    LOOP AT lt_travel INTO DATA(ls_travel).
+      MODIFY ENTITIES OF zi_travel_rs1 IN LOCAL MODE
+      ENTITY travel
+      UPDATE FIELDS ( TotalPrice )
+      WITH VALUE #( ( %tky       = ls_travel-%tky
+                      TotalPrice = ls_travel-BookingFee ) ).
+    ENDLOOP.
   ENDMETHOD.
 
 ENDCLASS.
