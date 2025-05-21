@@ -2,6 +2,7 @@
 @EndUserText.label: 'Consumption View for Travel'
 @Metadata.ignorePropagatedAnnotations: true
 @Metadata.allowExtensions: true
+@ObjectModel.semanticKey: [ 'TravelId' ]
 define root view entity ZC_TRAVEL_RS1
   provider contract transactional_query
   as projection on ZI_TRAVEL_RS1
@@ -25,6 +26,7 @@ define root view entity ZC_TRAVEL_RS1
       @ObjectModel.text.element: [ 'Status' ]
       OverallStatus,
       _status._Text.Text  as status : localized,
+      OverallCriticality,
       CreatedBy,
       CreatedAt,
       LastChangedBy,
