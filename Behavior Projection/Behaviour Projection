@@ -1,6 +1,7 @@
 projection;
 strict ( 2 );
 use draft;
+use side effects;
 
 define behavior for ZC_TRAVEL_RS1 alias Travel
 {
@@ -21,6 +22,7 @@ define behavior for ZC_TRAVEL_RS1 alias Travel
   use action Prepare;
 
   use association _booking { create; with draft; }
+  //use association _booksuppl{ with draft;}
 }
 
 define behavior for ZC_BOOKING_RS1 alias Booking
