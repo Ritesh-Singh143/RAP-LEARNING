@@ -5,7 +5,7 @@ define root view entity ZI_TRAVEL_RS1
   as select from zrs_travel_01
   composition [1..*] of ZI_BOOKING_RS1           as _booking
   association [0..1] to /DMO/I_Agency            as _agency   on $projection.AgencyId = _agency.AgencyID
-  association [0..1] to /dmo/customer            as _customer on $projection.CustomerId = _customer.customer_id
+  association [0..1] to /DMO/I_Customer          as _customer on $projection.CustomerId = _customer.CustomerID
   association [0..1] to I_Currency               as _currency on $projection.CurrencyCode = _currency.Currency
   association [1..1] to /DMO/I_Overall_Status_VH as _status   on $projection.OverallStatus = _status.OverallStatus
 {
@@ -21,8 +21,17 @@ define root view entity ZI_TRAVEL_RS1
       currency_code   as CurrencyCode,
       description     as Description,
       overall_status  as OverallStatus,
+      case overall_status
+      when 'O' then 2
+      when 'A' then 3
+      when 'X' then 1
+      else 0
+      end             as OverallCriticality,
+      @Semantics.user.createdBy: true
       created_by      as CreatedBy,
+      @Semantics.dateTime: true
       created_at      as CreatedAt,
+      @Semantics.user.localInstanceLastChangedBy: true
       last_changed_by as LastChangedBy,
       last_changed_at as LastChangedAt,
       _booking, // Make association public
@@ -31,3 +40,4 @@ define root view entity ZI_TRAVEL_RS1
       _currency,
       _status
 }
+
