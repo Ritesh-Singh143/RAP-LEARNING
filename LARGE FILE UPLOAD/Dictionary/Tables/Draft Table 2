@@ -1,0 +1,19 @@
+@EndUserText.label : 'Draft table for entity YI_TABLE2'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ydraft2 {
+
+  key mandt   : mandt not null;
+  key id      : sysuuid_x16 not null;
+  attachid    : abap.char(32);
+  comments    : abap.char(50);
+  attachment  : zattachment;
+  mimetype    : abap.char(128);
+  filename    : abap.char(128);
+  phonenumber : abap.int8;
+  address     : abap.char(50);
+  "%admin"    : include sych_bdl_draft_admin_inc;
+
+}
