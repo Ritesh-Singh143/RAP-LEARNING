@@ -1,0 +1,32 @@
+projection;
+strict ( 2 );
+
+use draft;
+
+define behavior for YC_TABLE1 alias Tab1
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Prepare;
+  use action Resume;
+
+  use association _tab2 { create; with draft; }
+
+}
+
+define behavior for YC_TABLE2 alias Tab2
+{
+
+  use update;
+  use delete;
+
+
+
+  use association _tab1 { with draft; }
+
+}
