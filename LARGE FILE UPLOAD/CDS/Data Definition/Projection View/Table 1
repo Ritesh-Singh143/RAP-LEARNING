@@ -1,0 +1,16 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Consumption View'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+
+define root view entity YC_TABLE1
+provider contract transactional_query
+  as projection on yi_table1
+{
+  key Id,
+      Firstname,
+      Lastname,
+      Age,
+      /* Associations */
+      _tab2 : redirected to composition child YC_TABLE2
+}
