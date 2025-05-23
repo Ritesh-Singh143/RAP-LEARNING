@@ -1,0 +1,64 @@
+CLASS lsc_zi_student_bgpf DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zi_student_bgpf IMPLEMENTATION.
+
+  METHOD save_modified.
+
+    DATA: lt_student TYPE STANDARD TABLE OF zrs_student_bgpf.
+
+    IF create-student_bgpf IS NOT INITIAL.
+
+      lt_student = CORRESPONDING #( create-student_bgpf MAPPING Id = id
+                                                                Firstname = Firstname
+                                                                Lastname = Lastname
+                                                                Age = age
+                                                                Course = Course
+                                                                Courseduration = Courseduration
+                                                                Status = Status
+                                                                Gender = Gender
+                                                                Dob = Dob
+                                                                Lastchangedat = Lastchangedat
+                                                                Locallastchangeat =  Locallastchangeat ).
+
+      MODIFY zrs_student_bgpf FROM TABLE @lt_student.
+      DATA(new) = NEW zcl_bgpf(  ).
+      DATA background_process TYPE REF TO if_bgmc_process_single_op.
+      TRY.
+          background_process = cl_bgmc_process_factory=>get_default( )->create( ).
+          background_process->set_operation_tx_uncontrolled( new ).
+          background_process->save_for_execution(  ).
+        CATCH cx_bgmc INTO DATA(exception).
+      ENDTRY.
+
+    ENDIF.
+
+    IF update-student_bgpf IS NOT INITIAL.
+    ENDIF.
+
+    IF delete-student_bgpf IS NOT INITIAL.
+    ENDIF.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_Student_BGPF DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR Student_BGPF RESULT result.
+
+ENDCLASS.
+
+CLASS lhc_Student_BGPF IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+ENDCLASS.
