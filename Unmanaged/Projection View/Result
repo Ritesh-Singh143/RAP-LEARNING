@@ -1,0 +1,33 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Projection View for Result'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define view entity ZC_RESULT_U
+  as projection on ZI_RESULT_U
+{
+  key     Id,
+          @ObjectModel.text.element: [ 'CourseDescription' ]
+  key     Course,
+          @ObjectModel.text.element: [ 'Semester_Description' ]
+  key     Semester,
+          TotalMarks,
+          Marks,
+          mark,
+          Overallcriticality,
+          @ObjectModel.text.element: [ 'SemRes_Description' ]
+          Semresult,
+          CourseDescription,
+          Semester_Description,
+          SemRes_Description,
+          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_CAL_PROGRESS'
+  virtual progres : abap.fltp,
+          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_CAL_DESC'
+  virtual descp   : abap.char( 50 ),
+          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_MARKS_PER'
+  virtual MarksP  : abap.char( 50 ),
+          /* Associations */
+          _course,
+          _sem,
+          _semres,
+          _student : redirected to parent ZC_STUDENT_U
+}
