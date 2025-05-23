@@ -1,0 +1,12 @@
+@EndUserText.label: 'Student Abstract Entity'
+@Metadata.allowExtensions: true
+define abstract entity ZA_STUDENT_ENTITY_RS
+  //with parameters parameter_name : parameter_type
+{
+  //@UI.defaultValue : #( 'ELEMENT_OF_REFERENCED_ENTITY: Course' )
+  Course         : abap.char(50);
+  //@UI.defaultValue : #( 'ELEMENT_OF_REFERENCED_ENTITY: CourseDuration' )
+  CourseDuration : abap.numc(4);
+  @UI.defaultValue : 'X' //#( 'ELEMENT_OF_REFERENCED_ENTITY: Status' )
+  Status         : abap_boolean;
+}
