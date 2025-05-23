@@ -1,0 +1,19 @@
+@EndUserText.label : 'Result Table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zrs_result_u {
+
+  key client   : abap.clnt not null;
+  @AbapCatalog.foreignKey.screenCheck : false
+  key id       : sysuuid_x16 not null
+    with foreign key zrs_student_u
+      where client = zrs_result_u.client
+        and id = zrs_result_u.id;
+  key course   : zrs_course_de_u not null;
+  key semester : zrs_sem_de_u not null;
+  marks        : abap.int1;
+  semresult    : zrs_semres_de_u;
+
+}
