@@ -1,0 +1,21 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Consumption View'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define view entity YC_TABLE2
+  as projection on yi_table2
+{
+  key Id,
+      AttachId,
+      Comments,
+      @Semantics.largeObject :{ mimeType: 'MimeType',
+                                fileName: 'FileName',
+                                contentDispositionPreference: #INLINE }
+      Attachment,
+      Mimetype,
+      Filename,
+      Phonenumber,
+      Address,
+      /* Associations */
+      _tab1 : redirected to parent YC_TABLE1
+}
