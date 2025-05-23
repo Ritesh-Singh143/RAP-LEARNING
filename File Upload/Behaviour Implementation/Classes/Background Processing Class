@@ -1,0 +1,40 @@
+CLASS zcl_bgpf DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    INTERFACES: if_bgmc_op_single_tx_uncontr,
+      if_oo_adt_classrun.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_BGPF IMPLEMENTATION.
+
+
+  METHOD if_bgmc_op_single_tx_uncontr~execute.
+
+    TRY.
+        "DUMMY HTTP POST REQUEST
+        DATA(dest) = cl_http_destination_provider=>create_by_url( 'https://www.google.com' ).
+        DATA(client) = cl_web_http_client_manager=>create_by_http_destination( dest ).
+        DATA(req) = client->get_http_request(  ).
+        DATA(post) = client->execute( if_web_http_client=>post )->get_text( ).
+        client->close(  ).
+        "DATA: out TYPE REF TO if_oo_adt_classrun_out.
+        "me->if_oo_adt_classrun~main( out ).
+      CATCH cx_root INTO DATA(error). "Catch all exceptions
+    ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD if_oo_adt_classrun~main.
+    "out = NEW #(  ).
+    "out->write( 'Executed Successfully' ).
+  ENDMETHOD.
+ENDCLASS.
