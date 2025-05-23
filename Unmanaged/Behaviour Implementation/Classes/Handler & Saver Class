@@ -1,0 +1,349 @@
+CLASS lsc_zi_student_u DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save REDEFINITION.
+
+    METHODS finalize REDEFINITION.
+
+    METHODS check_before_save REDEFINITION.
+
+    METHODS cleanup REDEFINITION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zi_student_u IMPLEMENTATION.
+
+  METHOD save.
+    zcl_student_api_class=>get_instance( )->savedata( CHANGING reported = reported ).
+  ENDMETHOD.
+
+  METHOD finalize.
+  ENDMETHOD.
+
+  METHOD check_before_save.
+    DATA: gt_students_tmp TYPE STANDARD TABLE OF zrs_student_u.
+
+    gt_students_tmp = zcl_student_api_class=>get_instance(  )->gt_student.
+
+    LOOP AT gt_students_tmp ASSIGNING FIELD-SYMBOL(<lfs_student>).
+      IF <lfs_student>-firstname IS INITIAL.
+        failed-student = VALUE #( ( Id = <lfs_student>-id ) ).
+        reported-student = VALUE #( BASE reported-student ( Id          = <lfs_student>-id
+                                                            %state_area = 'FIRSTNAME'
+                                                            %msg        = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                                                 text     = 'First Name is mandatory' ) ) ).
+      ENDIF.
+
+      IF <lfs_student>-Lastname IS INITIAL.
+        failed-student = VALUE #( ( Id = <lfs_student>-id ) ).
+        reported-student = VALUE #( BASE reported-student ( Id          = <lfs_student>-id
+                                                            %state_area = 'LASTNAME'
+                                                            %msg        = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                                                 text     = 'Last Name is mandatory' ) ) ).
+      ENDIF.
+
+      IF <lfs_student>-age < 18.
+        failed-student = VALUE #( ( Id = <lfs_student>-id ) ).
+        reported-student = VALUE #( BASE reported-student ( Id          = <lfs_student>-id
+                                                            %state_area = 'AGE'
+                                                            %msg        = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                                                 text     = 'Below 18 not allowed' ) ) ).
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD cleanup.
+  ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_result DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE Result.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE Result.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ Result RESULT result.
+
+    METHODS rba_Student FOR READ
+      IMPORTING keys_rba FOR READ Result\_Student FULL result_requested RESULT result LINK association_links.
+
+ENDCLASS.
+
+CLASS lhc_result IMPLEMENTATION.
+
+  METHOD update.
+    zcl_student_api_class=>get_instance(  )->update_result(
+        EXPORTING
+        entities = entities
+        CHANGING
+         mapped = mapped
+         failed = failed
+         reported = reported   ).
+  ENDMETHOD.
+
+  METHOD delete.
+    zcl_student_api_class=>get_instance(  )->delete_result(
+        EXPORTING
+        keys = keys
+        CHANGING
+         mapped = mapped
+         failed = failed
+         reported = reported   ).
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD rba_Student.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_Student DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR Student RESULT result.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR Student RESULT result.
+
+    METHODS create FOR MODIFY
+      IMPORTING entities FOR CREATE Student.
+
+    METHODS earlynumbering_create FOR NUMBERING
+      IMPORTING entities FOR CREATE Student.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE Student.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE Student.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ Student RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK Student.
+
+    METHODS rba_Result FOR READ
+      IMPORTING keys_rba FOR READ Student\_Result FULL result_requested RESULT result LINK association_links.
+
+    METHODS cba_Result FOR MODIFY
+      IMPORTING entities_cba FOR CREATE Student\_Result.
+    METHODS validate_fields FOR VALIDATE ON SAVE
+      IMPORTING keys FOR Student~validate_fields.
+    METHODS updateStudentStatus FOR MODIFY
+      IMPORTING keys FOR ACTION Student~updateStudentStatus RESULT result.
+
+    METHODS earlynumbering_cba_Result FOR NUMBERING
+      IMPORTING entities FOR CREATE Student\_Result.
+
+ENDCLASS.
+
+CLASS lhc_Student IMPLEMENTATION.
+
+  METHOD get_global_authorizations.
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+*    READ ENTITIES OF zi_student_u IN LOCAL MODE
+*    ENTITY Student
+*    FIELDS ( Status )
+*    WITH CORRESPONDING #( keys )
+*    RESULT DATA(lt_student).
+*
+*    result = VALUE #( FOR ls_student IN lt_student
+*                      ( %tky = ls_student-%tky
+*                        %features-%action-updateStudentStatus = COND #( WHEN ls_student-Status EQ abap_false THEN if_abap_behv=>fc-o-enabled
+*                                                                        ELSE if_abap_behv=>fc-o-disabled ) ) ).
+  ENDMETHOD.
+
+  METHOD create.
+    zcl_student_api_class=>get_instance(  )->create_student(
+      EXPORTING
+      entities = entities
+      CHANGING
+       mapped = mapped
+       failed = failed
+       reported = reported   ).
+
+  ENDMETHOD.
+
+  METHOD earlynumbering_create.
+    zcl_student_api_class=>get_instance(  )->earlynumbering_create_student(
+    EXPORTING
+    entities = entities
+    CHANGING
+     mapped = mapped
+     failed = failed
+     reported = reported   ).
+  ENDMETHOD.
+
+  METHOD update.
+    zcl_student_api_class=>get_instance(  )->update_student(
+      EXPORTING
+      entities = entities
+      CHANGING
+       mapped = mapped
+       failed = failed
+       reported = reported   ).
+  ENDMETHOD.
+
+  METHOD delete.
+    zcl_student_api_class=>get_instance(  )->delete_student(
+      EXPORTING
+      keys = keys
+      CHANGING
+       mapped = mapped
+       failed = failed
+       reported = reported   ).
+  ENDMETHOD.
+
+  METHOD read.
+    zcl_student_api_class=>get_instance(  )->read_student(
+      EXPORTING
+      keys = keys
+      CHANGING
+       result = result
+       failed = failed
+       reported = reported   ).
+
+  ENDMETHOD.
+
+  METHOD lock.
+    TRY.
+        DATA(lock) = cl_abap_lock_object_factory=>get_instance( iv_name = 'EZLOCKSTUDENT_RS' ).
+      CATCH cx_abap_lock_failure INTO DATA(lv_exception).
+        RAISE SHORTDUMP lv_exception.
+    ENDTRY.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<lfs_keys>).
+      TRY.
+          lock->enqueue( it_parameter = VALUE #( ( name = 'ID' value = REF #( <lfs_keys>-id ) ) ) ).
+        CATCH cx_abap_foreign_lock INTO DATA(lv_foreign_lock).
+          failed-student = VALUE #( (  Id = <lfs_keys>-Id ) ).
+          REported-student = VALUE #( ( Id   = <lfs_keys>-Id
+                                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                      text     = 'Record is locked by' && lv_foreign_lock->user_name
+                                      ) ) ).
+        CATCH cx_abap_lock_failure INTO DATA(lock_failure).
+          RAISE SHORTDUMP lock_failure.
+      ENDTRY.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD rba_Result.
+  ENDMETHOD.
+
+  METHOD cba_Result.
+    zcl_student_api_class=>get_instance(  )->create_result(
+        EXPORTING
+        entities_cba = entities_cba
+        CHANGING
+         mapped = mapped
+         failed = failed
+         reported = reported  ).
+
+  ENDMETHOD.
+
+  METHOD earlynumbering_cba_Result.
+    zcl_student_api_class=>get_instance(  )->earlynumbering_cba_result(
+      EXPORTING
+      entities = entities
+      CHANGING
+       mapped = mapped
+       failed = failed
+       reported = reported   ).
+
+  ENDMETHOD.
+
+  METHOD validate_fields.
+
+    READ ENTITIES OF zi_student_U IN LOCAL MODE
+    ENTITY Student
+    FIELDS ( Firstname Lastname Age )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_student)
+    FAILED DATA(lt_failed)
+    REPORTED DATA(lt_reported).
+
+    LOOP AT lt_student ASSIGNING FIELD-SYMBOL(<lfs_student>).
+
+      reported-student = VALUE #( ( %tky = <lfs_student>-%tky %state_area = 'VALIDATE_FN' )
+                                  ( %tky = <lfs_student>-%tky %state_area = 'VALIDATE_LN' )
+                                  ( %tky = <lfs_student>-%tky %state_area = 'VALIDATE_AGE' ) ).
+
+      IF <lfs_student>-Firstname IS INITIAL OR <lfs_student>-Lastname IS INITIAL OR <lfs_student>-age IS INITIAL.
+        failed-student = VALUE #( ( %tky = <lfs_student>-%tky ) ).
+      ENDIF.
+
+
+      IF <lfs_student>-firstname IS INITIAL.
+        reported-student = VALUE #( BASE reported-student ( %tky               = <lfs_student>-%tky
+                                                            %state_area        = 'VALIDATE_FN'
+                                                            %element-firstname = if_abap_behv=>mk-on
+                                                            %msg               = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                                                        text     = 'First Name is required' ) ) ).
+      ENDIF.
+
+      IF <lfs_student>-Lastname IS INITIAL.
+        reported-student = VALUE #( BASE reported-student ( %tky              = <lfs_student>-%tky
+                                                            %state_area       = 'VALIDATE_LN'
+                                                            %element-lastname = if_abap_behv=>mk-on
+                                                            %msg              = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                                                       text     = 'Last Name is required' ) ) ).
+      ENDIF.
+
+      IF <lfs_student>-age IS INITIAL.
+        reported-student = VALUE #( BASE reported-student ( %tky         = <lfs_student>-%tky
+                                                            %state_area  = 'VALIDATE_AGE'
+                                                            %element-age = if_abap_behv=>mk-on
+                                                            %msg         = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                                                                  text     = 'Age is required' ) ) ).
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD updateStudentStatus.
+
+    READ ENTITIES OF zi_student_u IN LOCAL MODE
+    ENTITY Student
+    FIELDS ( Course Courseduration Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_student).
+
+    LOOP AT lt_student INTO DATA(ls_student).
+      MODIFY ENTITIES OF zi_student_u IN LOCAL MODE
+      ENTITY Student
+      UPDATE FIELDS ( Course Courseduration Status )
+      WITH VALUE #( ( %tky           = ls_student-%tky
+                      Course         = keys[ Id = ls_student-Id ]-%param-Course
+                      Courseduration = keys[ Id = ls_student-Id ]-%param-CourseDuration
+                      Status         = keys[ Id = ls_student-Id ]-%param-status ) ).
+    ENDLOOP.
+
+    READ ENTITIES OF zi_student_u IN LOCAL MODE
+    ENTITY Student
+    FIELDS ( Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_studentt).
+
+    result = VALUE #( FOR ls_st IN lt_studentt
+                      ( %tky   = ls_st-%tky
+                        %param = ls_st ) ).
+
+  ENDMETHOD.
+
+ENDCLASS.
