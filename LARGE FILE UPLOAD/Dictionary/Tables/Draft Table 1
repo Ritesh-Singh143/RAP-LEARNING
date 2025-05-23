@@ -1,0 +1,15 @@
+@EndUserText.label : 'Draft table for entity YI_TABLE1'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ydraft1 {
+
+  key mandt : mandt not null;
+  key id    : sysuuid_x16 not null;
+  firstname : abap.char(20);
+  lastname  : abap.char(20);
+  age       : abap.int2;
+  "%admin"  : include sych_bdl_draft_admin_inc;
+
+}
