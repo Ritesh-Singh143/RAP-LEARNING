@@ -1,0 +1,313 @@
+CLASS zcl_student_api_class DEFINITION PUBLIC FINAL CREATE PUBLIC .
+  PUBLIC SECTION.
+
+    DATA: gt_student        TYPE STANDARD TABLE OF zrs_student_u.
+
+    TYPES: BEGIN OF ty_result,
+             id       TYPE sysuuid_x16,
+             course   TYPE zrs_course_de_u,
+             semester TYPE zrs_semres_de_u,
+           END OF ty_result.
+
+    TYPES: tt_create_student TYPE TABLE FOR CREATE zi_student_u\\student,
+           tt_mapped_early   TYPE RESPONSE FOR MAPPED EARLY zi_student_u,
+           tt_failed_early   TYPE RESPONSE FOR FAILED EARLY zi_student_u,
+           tt_reported_early TYPE RESPONSE FOR REPORTED EARLY zi_student_u,
+           tt_reported_late  TYPE RESPONSE FOR REPORTED LATE zi_student_u,
+           tt_delete_student TYPE TABLE FOR DELETE zi_student_u\\student,
+           tt_read_student   TYPE TABLE FOR READ IMPORT zi_student_u\\student,
+           tt_result_student TYPE TABLE FOR READ RESULT zi_student_u\\student,
+           tt_update_student TYPE TABLE FOR UPDATE zi_student_u\\student,
+           tt_create_result  TYPE TABLE FOR CREATE zi_student_u\\student\_result,
+           tt_delete_result  TYPE TABLE FOR DELETE zi_student_u\\result,
+           tt_update_result  TYPE TABLE FOR UPDATE zi_student_u\\result.
+
+
+    CLASS-METHODS : get_instance RETURNING VALUE(ro_instance) TYPE REF TO zcl_student_api_class.
+
+    METHODS : earlynumbering_create_student IMPORTING entities TYPE tt_create_student
+                                            CHANGING  mapped   TYPE tt_mapped_early
+                                                      failed   TYPE tt_failed_early
+                                                      reported TYPE tt_reported_early,
+      create_student IMPORTING entities TYPE tt_create_student
+                     CHANGING  mapped   TYPE tt_mapped_early
+                               failed   TYPE tt_failed_early
+                               reported TYPE tt_reported_early,
+      delete_student IMPORTING keys     TYPE tt_delete_student
+                     CHANGING  mapped   TYPE tt_mapped_early
+                               failed   TYPE tt_failed_early
+                               reported TYPE tt_reported_early,
+      read_student  IMPORTING keys     TYPE tt_read_student
+                    CHANGING  result   TYPE tt_result_student
+                              failed   TYPE tt_failed_early
+                              reported TYPE tt_reported_early,
+      update_student IMPORTING entities TYPE tt_update_student
+                     CHANGING  mapped   TYPE tt_mapped_early
+                               failed   TYPE tt_failed_early
+                               reported TYPE tt_reported_early,
+      earlynumbering_cba_Result IMPORTING entities TYPE tt_create_result
+                                CHANGING  mapped   TYPE tt_mapped_early
+                                          failed   TYPE tt_failed_early
+                                          reported TYPE tt_reported_early,
+      create_result IMPORTING entities_cba TYPE tt_create_result
+                    CHANGING  mapped       TYPE tt_mapped_early
+                              failed       TYPE tt_failed_early
+                              reported     TYPE tt_reported_early,
+      delete_result IMPORTING keys     TYPE tt_delete_result
+                    CHANGING  mapped   TYPE tt_mapped_early
+                              failed   TYPE tt_failed_early
+                              reported TYPE tt_reported_early,
+      update_result IMPORTING entities TYPE tt_update_result
+                    CHANGING  mapped   TYPE tt_mapped_early
+                              failed   TYPE tt_failed_early
+                              reported TYPE tt_reported_early,
+      saveData CHANGING reported TYPE tt_reported_late.
+
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    CLASS-DATA : mo_instance       TYPE REF TO zcl_student_api_class,
+                 "gt_student        TYPE tt_create_student, "STANDARD TABLE OF zi_student_u,
+                 gs_mapped         TYPE tt_mapped_early,
+                 gt_results        TYPE  STANDARD TABLE OF zrs_result_u, "tt_create_result,
+                 gt_delete_student TYPE RANGE OF zrs_student_u-id,
+                 gt_delete_result  TYPE RANGE OF zrs_result_u-id,
+                 gt_delete_results TYPE STANDARD TABLE OF zrs_result_u,
+                 lv_timestamp      TYPE timestampl.
+ENDCLASS.
+
+
+
+CLASS ZCL_STUDENT_API_CLASS IMPLEMENTATION.
+
+
+  METHOD create_result.
+
+
+    gt_results = VALUE #( FOR entity IN entities_cba[ 1 ]-%target ( id        = entity-Id
+                                                                    Course    = entity-Course
+                                                                    Semester  = entity-Semester
+                                                                    marks     = entity-Marks
+                                                                    semresult = entity-Semresult ) ).
+
+  ENDMETHOD.
+
+
+  METHOD create_student.
+
+    GET TIME STAMP FIELD lv_timestamp.
+
+    gt_student = CORRESPONDING #( entities MAPPING  Id = id
+                                                    Firstname = Firstname
+                                                    Lastname = Lastname
+                                                    Age = age
+                                                    Course = Course
+                                                    Courseduration = Courseduration
+                                                    Status = Status
+                                                    Gender = Gender
+                                                    Dob = Dob
+                                                    Lastchangedat = Lastchangedat
+                                                    Locallastchangeat =  Locallastchangeat ).
+    gt_student[ 1 ]-Lastchangedat = lv_timestamp.
+    gt_student[ 1 ]-Locallastchangeat = lv_timestamp.
+
+  ENDMETHOD.
+
+
+  METHOD delete_result.
+
+    DATA: lt_delete_result TYPE STANDARD TABLE OF zrs_result_u.
+
+    lt_delete_result = CORRESPONDING #( keys ).
+
+    IF lt_delete_result IS NOT INITIAL.
+      gt_delete_results = VALUE #( FOR ls_delete_result IN lt_delete_result ( id       = ls_delete_result-id
+                                                                              course   = ls_delete_result-course
+                                                                              semester = ls_delete_result-semester ) ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD delete_student.
+    DATA: lt_delete_student TYPE STANDARD TABLE OF zi_student_u.
+
+    lt_delete_student = CORRESPONDING #( keys ).
+
+    IF NOT lt_delete_student IS INITIAL.
+
+      gt_delete_student = VALUE #( FOR ls_delete IN lt_delete_student
+                                   sign   = 'I'
+                                   option = 'EQ'
+                                   ( low = ls_delete-Id ) ).
+
+      gt_delete_result = VALUE #( FOR ls_delete IN lt_delete_student
+                                  sign   = 'I'
+                                  option = 'EQ'
+                                  ( low = ls_delete-Id ) ).
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD earlynumbering_cba_result.
+
+    mapped-result  = VALUE #( FOR entity IN entities ( %cid      = entity-%target[ 1 ]-%cid
+                                                       %is_draft = entity-%target[ 1 ]-%is_draft
+                                                       Id        = entity-Id
+                                                       Course    = entity-%target[ 1 ]-Course
+                                                       Semester  = entity-%target[ 1 ]-Semester ) ).
+
+  ENDMETHOD.
+
+
+  METHOD earlynumbering_create_student.
+
+    DATA(ls_mapped) = gs_mapped.
+
+    TRY.
+        DATA(lv_new_id) = cl_uuid_factory=>create_system_uuid( )->create_uuid_x16( ).
+      CATCH cx_uuid_error.
+        "handle exception
+    ENDTRY.
+
+*Buffer Table
+
+    READ TABLE gt_student ASSIGNING FIELD-SYMBOL(<lfs_student>) INDEX 1.
+    IF <lfs_student> IS ASSIGNED.
+      <lfs_student>-id = lv_new_id.
+      UNASSIGN <lfs_student>.
+    ENDIF.
+
+    mapped-student = VALUE #( FOR ls_entity IN entities WHERE ( id IS INITIAL )
+                                                              ( %cid      = ls_entity-%cid
+                                                                %is_draft = ls_entity-%is_draft
+                                                                Id        = lv_new_id ) ).
+  ENDMETHOD.
+
+
+  METHOD get_instance.
+    mo_instance = ro_instance = COND #( WHEN mo_instance IS BOUND THEN mo_instance ELSE NEW #( ) ).
+  ENDMETHOD.
+
+
+  METHOD read_student.
+    SELECT * FROM zrs_student_u FOR ALL ENTRIES IN @keys
+    WHERE id = @keys-Id INTO TABLE @DATA(lt_student).
+
+    result = VALUE #( FOR ls_student IN lt_student
+                      ( CORRESPONDING #( ls_student ) ) ).
+
+  ENDMETHOD.
+
+
+  METHOD savedata.
+*Student CRUD Operations
+*Create
+    IF gt_student IS NOT INITIAL.
+      MODIFY zrs_student_u FROM TABLE @( CORRESPONDING #( gt_student ) ).
+    ENDIF.
+*Delete
+    IF gt_delete_student IS NOT INITIAL.
+*Deleting Student Entry
+      DELETE FROM zrs_student_u WHERE id IN @gt_delete_student.
+*Deleting Corresponding Results as well
+      DELETE FROM zrs_result_u WHERE id IN @gt_delete_result.
+    ENDIF.
+
+*Result CRUD Operations
+*Create
+    IF gt_results IS NOT INITIAL.
+      MODIFY zrs_result_u FROM TABLE @gt_results.
+    ENDIF.
+*Delete
+    IF gt_delete_results IS NOT INITIAL.
+      DELETE zrs_result_u FROM TABLE @gt_delete_results.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD update_result.
+
+    DATA: lt_update_result   TYPE STANDARD TABLE OF zrs_result_u,
+          lt_update_result_x TYPE STANDARD TABLE OF zcs_result_u.
+
+    lt_update_result = CORRESPONDING #( entities MAPPING FROM ENTITY ).
+    lt_update_result_x = CORRESPONDING #(  entities MAPPING FROM ENTITY USING CONTROL ).
+
+    SELECT * FROM zrs_result_u FOR ALL ENTRIES IN @lt_update_result
+    WHERE id = @lt_update_result-id
+    AND course = @lt_update_result-course
+    AND semester = @lt_update_result-semester INTO TABLE @DATA(lt_old_data).
+
+    gt_results = VALUE #(
+                            FOR x       = 1 WHILE x <= lines( entities )
+                          LET
+                              ls_flag = VALUE #( lt_update_result_x[ x ] OPTIONAL )
+                              ls_new  = VALUE #( lt_update_result[ x ] OPTIONAL )
+                              ls_old  = VALUE #( lt_old_data[ id = ls_new-id course = ls_new-course semester = ls_new-semester ] OPTIONAL )
+                        IN
+                          ( id        = COND #( WHEN ls_flag-id IS NOT INITIAL THEN ls_new-id ELSE ls_old-id )
+                            course    = COND #( WHEN ls_flag-course IS NOT INITIAL THEN ls_new-course ELSE ls_old-course )
+                            semester  = COND #( WHEN ls_flag-semester IS NOT INITIAL THEN ls_new-semester ELSE ls_old-semester )
+                            marks     = COND #( WHEN ls_flag-marks IS NOT INITIAL THEN ls_new-marks ELSE ls_old-marks )
+                            semresult = COND #( WHEN ls_flag-semresult IS NOT INITIAL THEN ls_new-semresult ELSE ls_old-semresult )
+                             ) ).
+
+  ENDMETHOD.
+
+
+  METHOD update_student.
+    DATA: lt_student_update   TYPE STANDARD TABLE OF zi_student_u,
+          lt_student_update_x TYPE STANDARD TABLE OF zcs_student_u.
+
+    lt_student_update = CORRESPONDING #( entities MAPPING Id = id
+                                                Firstname = Firstname
+                                                Lastname = Lastname
+                                                Age = age
+                                                Course = Course
+                                                Courseduration = Courseduration
+                                                Status = Status
+                                                Gender = Gender
+                                                Dob = Dob
+                                                Lastchangedat = Lastchangedat
+                                                Locallastchangeat =  Locallastchangeat  ).
+    lt_student_update_x = CORRESPONDING #( entities MAPPING FROM ENTITY USING CONTROL ).
+
+    IF lt_student_update IS NOT INITIAL.
+
+      GET TIME STAMP FIELD lv_timestamp.
+
+      SELECT * FROM zrs_student_u FOR ALL ENTRIES IN @lt_student_update
+       WHERE id = @lt_student_update-Id INTO TABLE @DATA(lt_old_student_data).
+    ENDIF.
+
+    gt_student = VALUE #(
+
+    LET ls_control_flag = VALUE #( lt_student_update_x[ 1 ] OPTIONAL )
+        ls_student_new  = VALUE #( lt_student_update[ 1 ] OPTIONAL )
+        ls_student_old  = VALUE #( lt_old_student_data[ id = ls_student_new-Id ] OPTIONAL )
+
+    IN
+    (
+    Id                = COND #( WHEN ls_control_flag-id IS NOT INITIAL THEN ls_student_new-Id ELSE ls_student_old-id )
+    firstname         = COND #( WHEN ls_control_flag-firstname IS NOT INITIAL THEN ls_student_new-firstname ELSE ls_student_old-firstname )
+    lastname          = COND #( WHEN ls_control_flag-lastname IS NOT INITIAL THEN ls_student_new-lastname ELSE ls_student_old-lastname )
+    age               = COND #( WHEN ls_control_flag-age IS NOT INITIAL THEN ls_student_new-age ELSE ls_student_old-age )
+    course            = COND #( WHEN ls_control_flag-course IS NOT INITIAL THEN ls_student_new-course ELSE ls_student_old-course )
+    courseduration    = COND #( WHEN ls_control_flag-courseduration IS NOT INITIAL THEN ls_student_new-courseduration ELSE ls_student_old-courseduration )
+    status            = COND #( WHEN ls_control_flag-status IS NOT INITIAL THEN ls_student_new-status ELSE ls_student_old-status )
+    gender            = COND #( WHEN ls_control_flag-gender IS NOT INITIAL THEN ls_student_new-gender ELSE ls_student_old-gender )
+    dob               = COND #( WHEN ls_control_flag-dob IS NOT INITIAL THEN ls_student_new-dob ELSE ls_student_old-dob )
+    Lastchangedat     = lv_timestamp
+    Locallastchangeat = lv_timestamp
+    )
+
+    ).
+
+
+
+
+  ENDMETHOD.
+ENDCLASS.
