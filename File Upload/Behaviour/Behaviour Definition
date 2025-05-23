@@ -1,0 +1,25 @@
+managed implementation in class zbp_i_student_bgpf unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZI_STUDENT_BGPF alias Student_BGPF
+implementation in class zbp_i_student_bgpf unique
+//persistent table zrs_student_bgpf
+with unmanaged save
+draft table zrs_draft_bgpf
+lock master
+total etag Locallastchangeat
+authorization master ( instance )
+etag master Locallastchangeat
+{
+  create;
+  update;
+  delete;
+  field ( numbering : managed, readonly ) Id;
+
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+}
