@@ -1,0 +1,23 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Interface View for Student'
+@Metadata.ignorePropagatedAnnotations: true
+define root view entity ZI_STUDENT_BGPF
+  as select from zrs_student_bgpf
+  association  to ZI_GENDER_bgpf as _gender on $projection.Gender = _gender.Value
+{
+  key id                  as Id,
+      @Consumption.semanticObject: ''
+      firstname           as Firstname,
+      lastname            as Lastname,
+      age                 as Age,
+      course              as Course,
+      courseduration      as Courseduration,
+      status              as Status,
+      gender              as Gender,
+      _gender.Description as GenderDescription,
+      dob                 as Dob,
+      lastchangedat       as Lastchangedat,
+      @Semantics.systemDateTime.localInstanceLastChangedAt: true
+      locallastchangeat   as Locallastchangeat,
+      _gender
+}
