@@ -1,0 +1,31 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Interface View for Result'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZI_RESULT_U
+  as select from zrs_result_u
+  association to parent ZI_STUDENT_U as _student on $projection.Id = _student.Id
+  association to ZI_COURSE_U         as _course  on $projection.Course = _course.Value
+  association to ZI_SEMESTER_U       as _sem     on $projection.Semester = _sem.Value
+  association to ZI_SEMRES_U         as _semres  on $projection.Semresult = _semres.Value
+{
+  key    id                  as Id,
+  key    course              as Course,
+  key    semester            as Semester,
+         100                 as TotalMarks,
+         marks               as Marks,
+         case marks
+         when 80 then 3
+         when 50 then 2
+         when 30 then 1
+         else 0
+         end                 as Overallcriticality,
+         marks               as mark,
+         semresult           as Semresult,
+         _course.Description as CourseDescription,
+         _sem.Description    as Semester_Description,
+         _semres.Description as SemRes_Description,
+         _course,
+         _sem,
+         _semres,
+         _student
+}
