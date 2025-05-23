@@ -1,0 +1,37 @@
+@Metadata.layer: #PARTNER
+@UI:{ headerInfo:{ typeName: 'Table2',
+                   typeNamePlural: 'Table22',
+                   description:{ type: #STANDARD,label: 'Table1',value: 'Phonenumber' } },
+                   presentationVariant: [{ sortOrder: [{ by: 'Phonenumber', direction: #ASC }] }] }
+annotate entity YC_TABLE2 with
+{
+  @UI.facet: [{ id: 'Table2',
+                 purpose: #STANDARD,
+                 type: #IDENTIFICATION_REFERENCE,
+                 label: 'Table22',
+                 position: 10 }]
+
+  @UI:{ lineItem: [{ position: 10, label: 'ID' }], identification: [{ label: 'ID',position: 10  }] }
+  Id;
+
+  @UI:{ lineItem: [{ position: 20, label: 'Attach Id' }], identification: [{ position: 20, label: 'Attach Id' }]}
+  AttachId;
+
+  @UI:{ lineItem: [{ position: 30, label: 'Comments' }], identification: [{ position: 30, label: 'Comments' }]}
+  Comments;
+
+  @UI:{ lineItem: [{ position: 40 ,label: 'MimeType' }],identification: [{ position: 40, label: 'MimeType' }]}
+  Mimetype;
+  @UI:{ lineItem: [{ position: 50, label: 'FileName' }], identification: [{ position: 50, label: 'FileName' }]}
+  Filename;
+
+  @UI:{ lineItem: [{ position: 60, label: 'PhoneNumber' }], identification: [{ label: 'PhoneNumber',position: 60  }] }
+  Phonenumber;
+
+  @UI:{ lineItem: [{ position: 70, label: 'Address' }], identification: [{ label: 'Address',position: 70  }] }
+  Address;
+  
+  @UI:{ lineItem: [{ position: 80, label: 'Attachment' }], identification: [{ position: 80, label: 'Attachment' }]}
+  Attachment;
+
+}
