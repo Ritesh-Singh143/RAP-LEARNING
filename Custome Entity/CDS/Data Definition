@@ -1,0 +1,33 @@
+@EndUserText.label: 'Custom Entity'
+@ObjectModel.query.implementedBy: 'ABAP:ZCL_DEMOFLIGHTS_CUSTOM'
+@UI:{ headerInfo : { typeName: 'Flight',
+                     typeNamePlural: 'Flights Data',
+                     description:{ type: #STANDARD,value: 'connection_id'},
+                     title :{ type: #STANDARD, value: 'Carrier_ID' } } }
+define root custom entity ZRS_CUSTOM_ENTITY
+{
+
+      @UI.facet      : [{ id : 'Flight Data',
+                    purpose: #STANDARD,
+                    type: #IDENTIFICATION_REFERENCE,
+                    position: 10,
+                    label : 'Flight' }]
+      @UI            : { lineItem: [{ position: 10 }], identification: [{ position: 10, label: 'Carrier Id' }], selectionField: [{ position: 10 }] }
+  key carrier_id     : /dmo/carrier_id;
+      @UI            : { lineItem: [{ position: 20 }], identification: [{ position: 20,label: 'Connection Id' }], selectionField: [{ position: 20 }] }
+  key connection_id  : /dmo/connection_id;
+      @UI            : { lineItem: [{ position: 30 }], identification: [{ position: 30,label: 'Flight Date' }], selectionField: [{ position: 30 }] }
+  key flight_date    : /dmo/flight_date;
+      @UI            : { lineItem: [{ position: 40 }], identification: [{ position: 40,label: 'Price' }] }
+      @Semantics.amount.currencyCode : 'currency_code'
+      price          : /dmo/flight_price;
+      @UI            : { lineItem: [{ position: 50 }], identification: [{ position: 50,label: 'Currency Code' }] }
+      currency_code  : /dmo/currency_code;
+      @UI            : { lineItem: [{ position: 60 }], identification: [{ position: 60,label: 'Plane Type' }] }
+      plane_type_id  : /dmo/plane_type_id;
+      @UI            : { lineItem: [{ position: 70 }], identification: [{ position: 70,label: 'Max Seat' }] }
+      seats_max      : /dmo/plane_seats_max;
+      @UI            : { lineItem: [{ position: 80 }], identification: [{ position: 80,label: 'Seat Occupied' }] }
+      seats_occupied : /dmo/plane_seats_occupied;
+
+}
