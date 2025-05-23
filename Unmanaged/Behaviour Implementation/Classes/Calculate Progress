@@ -1,0 +1,44 @@
+CLASS zcl_cal_progress DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    INTERFACES if_sadl_exit_calc_element_read.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_CAL_PROGRESS IMPLEMENTATION.
+
+
+  METHOD if_sadl_exit_calc_element_read~calculate.
+
+    CHECK it_original_data IS NOT INITIAL.
+
+    DATA: lt_original_data TYPE STANDARD TABLE OF zc_result_u WITH DEFAULT KEY.
+
+    lt_original_data = CORRESPONDING #( it_original_data ).
+
+    LOOP AT lt_original_data ASSIGNING FIELD-SYMBOL(<lfs_data>).
+      <lfs_data>-progres =  (  <lfs_data>-Marks / <lfs_data>-TotalMarks ) * 5.
+    ENDLOOP.
+
+    ct_calculated_data = CORRESPONDING #( lt_original_data ).
+
+  ENDMETHOD.
+
+
+  METHOD if_sadl_exit_calc_element_read~get_calculation_info.
+
+    IF line_exists( it_requested_calc_elements[ table_line = 'TotalMarks' ] ).
+      APPEND 'TotalMarks' TO et_requested_orig_elements.
+    ENDIF.
+
+    IF line_exists( it_requested_calc_elements[ table_line = 'Marks' ] ).
+      APPEND 'Marks' TO et_requested_orig_elements.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
