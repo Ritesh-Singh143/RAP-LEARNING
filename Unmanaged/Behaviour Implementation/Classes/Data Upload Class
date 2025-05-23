@@ -1,0 +1,41 @@
+CLASS zcl_student_rs DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_STUDENT_RS IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+*    DELETE FROM zrs_result_u.
+*    IF sy-subrc = 0.
+*      out->write( 'Data Deleted Successfully' ).
+*    ENDIF.
+*    DATA: lt_data1 TYPE STANDARD TABLE OF i,
+*          lt_data2 TYPE STANDARD TABLE OF i,
+*          lt_data3 TYPE STANDARD TABLE OF i,
+*          lt_data4 TYPE STANDARD TABLE OF i.
+*
+*    lt_data1 = VALUE #( FOR x = 0 THEN x + 1 WHILE x <= 10 ( x )  ).
+*
+*    lt_data2 = lt_data1.
+*
+*    lt_data3 = VALUE #( FOR x = 0 UNTIL x >= 10 ( x ) ).
+*
+*    lt_data4 = lt_data3.
+
+    INSERT zrs_creator_dtls FROM TABLE @( VALUE #( ( created_by = 'RITESH'       designation = 'Software Engineer' )
+                                                   ( created_by = 'Ritesh Singh' designation = 'Software Engineer' )
+                                                   ( created_by = 'CB9980004395' designation = 'Software Engineer' )
+                                                   ( created_by = 'MR SINGH'     designation = 'Software Engineer' ) ) ).
+
+  ENDMETHOD.
+ENDCLASS.
