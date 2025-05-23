@@ -1,0 +1,5 @@
+@EndUserText.label: 'Service Definition'
+define service YEXPOSE_FILE_V2 {
+  expose YC_TABLE1;
+  expose YC_TABLE2;
+}
