@@ -1,0 +1,54 @@
+managed;
+strict ( 2 );
+with draft;
+
+define behavior for yi_table1 alias Tab1
+implementation in class zbp_i_table1 unique
+persistent table ytable1
+draft table ydraft1
+lock master
+total etag Id
+authorization master ( instance )
+//etag master <field_name>
+{
+  create;
+  update;
+  delete;
+  field ( numbering : managed, readonly ) Id;
+  association _tab2 { create; with draft; }
+
+
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+
+}
+
+define behavior for yi_table2 alias Tab2
+implementation in class zbp_i_table1 unique
+draft table ydraft2
+persistent table ytable2
+lock dependent by _tab1
+authorization dependent by _tab1
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) Id;
+  association _tab1 { with draft; }
+
+
+  mapping for ytable2
+    {
+      Id          = id;
+      AttachId    = attach_id;
+      Comments    = comments;
+      Attachment  = attachment;
+      Mimetype    = mimetype;
+      Filename    = filename;
+      Phonenumber = phonenumber;
+      Address     = address;
+    }
+}
