@@ -1,0 +1,18 @@
+@EndUserText.label : 'table2'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ytable2 {
+
+  key client    : abap.clnt not null;
+  key id        : sysuuid_x16 not null;
+  key attach_id : abap.char(32) not null;
+  comments      : abap.char(50);
+  attachment    : zattachment;
+  mimetype      : abap.char(128);
+  filename      : abap.char(128);
+  phonenumber   : abap.int8;
+  address       : abap.char(50);
+
+}
