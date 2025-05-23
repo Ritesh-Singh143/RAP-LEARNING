@@ -1,0 +1,21 @@
+@EndUserText.label : 'Student Table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zrs_student_bgpf {
+
+  key client        : abap.clnt not null;
+  key id            : sysuuid_x16 not null;
+  firstname         : abap.char(100) not null;
+  lastname          : abap.char(100);
+  age               : abap.numc(4);
+  course            : abap.char(50);
+  courseduration    : abap.numc(4);
+  status            : abap_boolean;
+  gender            : abap.char(1);
+  dob               : abap.dats;
+  lastchangedat     : timestampl;
+  locallastchangeat : timestampl;
+
+}
