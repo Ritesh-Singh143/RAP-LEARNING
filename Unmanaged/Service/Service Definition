@@ -1,0 +1,5 @@
+@EndUserText.label: 'Service Definition'
+define service ZRS_EXPOSE_STUDENT {
+  expose ZC_STUDENT_U;
+  expose ZC_RESULT_U;
+}
