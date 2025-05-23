@@ -1,0 +1,14 @@
+@EndUserText.label : 'Table1'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ytable1 {
+
+  key client : abap.clnt not null;
+  key id     : sysuuid_x16 not null;
+  firstname  : abap.char(20);
+  lastname   : abap.char(20);
+  age        : abap.int2;
+
+}
