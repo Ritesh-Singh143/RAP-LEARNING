@@ -1,0 +1,25 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Projection View for Student'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity ZC_STUDENT_U
+  provider contract transactional_query
+  as projection on ZI_STUDENT_U
+{
+  key Id,
+      Firstname,
+      Lastname,
+      Age,
+      Course,
+      Courseduration,
+      Status,
+      @ObjectModel.text.element: [ 'GenderDescription' ]
+      Gender,
+      GenderDescription,
+      Dob,
+      Lastchangedat,
+      Locallastchangeat,
+      /* Associations */
+      _gender,
+      _result : redirected to composition child ZC_RESULT_U
+}
