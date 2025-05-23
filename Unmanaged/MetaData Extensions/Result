@@ -1,0 +1,73 @@
+@Metadata.layer: #PARTNER
+@UI:{ headerInfo:{ typeName: 'Academic Result',
+                 typeNamePlural: 'Academic Results',
+                 title:{ type: #STANDARD, label: 'Academic Result Details', value: 'SemRes_Description' },
+                 description:{ type: #STANDARD,label: 'Academic Result Details' } } }
+@UI.chart: [{ chartType: #DONUT,
+              qualifier: 'MarksPercentage',
+              measures: [ 'MarksP' ],
+              measureAttributes: [{ measure: 'MarksP',
+                                    role: #AXIS_1,
+                                    asDataPoint: true }] }]
+annotate entity ZC_RESULT_U with
+{
+  @UI.facet: [{ id: 'Academic',
+               purpose: #STANDARD,
+                type: #IDENTIFICATION_REFERENCE,
+                label: 'Academic Result Details',
+                position: 10 }]
+
+  @UI:{ lineItem: [{ position: 10, label: 'Student ID' }], identification: [{ position: 10, label: 'Student ID' }] }
+  @Search.defaultSearchElement: true
+  Id;
+  @UI.textArrangement: #TEXT_ONLY
+  @UI:{ lineItem: [{ position: 20, label: 'Course' }], identification: [{ position: 20, label: 'Course' }] }
+  @Search.defaultSearchElement: true
+  @Consumption.valueHelpDefinition: [{ entity:{ name: 'ZI_COURSE_U', element: 'Value' },
+                                       distinctValues: true,
+                                       additionalBinding: [{ localElement: 'CourseDescription', element: 'Description', usage: #FILTER_AND_RESULT }] }]
+  Course;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 30, label: 'Course Description' }], identification: [{ position: 30, label: 'Course Description' }] }
+  CourseDescription;
+  @UI.textArrangement: #TEXT_ONLY
+  @UI:{ lineItem: [{ position: 40, label: 'Semester' }], identification: [{ position: 40, label: 'Semester' }] }
+  @Search.defaultSearchElement: true
+  @Consumption.valueHelpDefinition: [{ entity:{ name: 'ZI_SEMESTER_U', element: 'Value' },
+                                       distinctValues: true,
+                                       additionalBinding: [{ localElement: 'Semester_Description', element: 'Description', usage: #FILTER_AND_RESULT }] }]
+  Semester;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 50, label: 'Semester Description' }], identification: [{ position: 50, label: 'Semester Description' }] }
+  Semester_Description;
+  @UI:{ lineItem: [{ position: 51, label: 'Total Marks' }], identification: [{ position: 51, label: 'Total Marks' }] }
+  TotalMarks;
+  @UI:{ lineItem: [{ position: 52, label: 'Marks Obtained' }], identification: [{ position: 52, label: 'Marks Obtained' }] }
+  Marks;
+  @UI:{ lineItem: [{type: #AS_DATAPOINT, position: 53, label: 'Progress Indicator',criticality: 'Overallcriticality' }],
+        identification: [{type: #AS_DATAPOINT, position: 53, label: 'Progress Indicator',criticality: 'Overallcriticality' }] }
+  @UI.dataPoint:{ visualization: #PROGRESS,targetValueElement: 'TotalMarks', criticality: 'Overallcriticality'}
+  mark;
+  @UI:{ lineItem: [{ type: #AS_DATAPOINT,position: 54, label: 'Progress Rating' }], identification: [{type: #AS_DATAPOINT, position: 54, label: 'Progress Rating' }] }
+  @UI.dataPoint:{ visualization: #RATING}
+  progres;
+  @UI:{ lineItem: [{ type: #AS_CHART,position: 55, label: 'Marks Percentage',valueQualifier: 'MarksPercentage' }],
+        identification: [{type: #AS_CHART, position: 55, label: 'Marks Percentage',valueQualifier: 'MarksPercentage'  }] }
+  @UI.dataPoint:{ criticalityCalculation:{ deviationRangeLowValue: 50,
+                                           toleranceRangeLowValue: 70,
+                                           improvementDirection: #MAXIMIZE } }      
+  MarksP;
+  @UI.textArrangement: #TEXT_ONLY
+  @UI:{ lineItem: [{ position: 60, label: 'Semester Result' }], identification: [{ position: 60, label: 'Semester Result' }] }
+  @Search.defaultSearchElement: true
+  @Consumption.valueHelpDefinition: [{ entity:{ name: 'ZI_SEMRES_U', element: 'Value' },
+                                       distinctValues: true,
+                                       additionalBinding: [{ localElement: 'SemRes_Description', element: 'Description', usage: #FILTER_AND_RESULT }] }]
+  Semresult;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 70, label: 'Semester Result Description' }], identification: [{ position: 70, label: 'Semester Result Description' }] }
+  SemRes_Description;
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 71, label: 'Comments' }], identification: [{ position: 71, label: 'Comments' }] }
+  descp;
+}
