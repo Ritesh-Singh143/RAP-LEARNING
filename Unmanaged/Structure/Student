@@ -1,0 +1,17 @@
+@EndUserText.label : 'Structure for Student'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+define structure zcs_student_u {
+
+  key id            : xsdboolean not null;
+  firstname         : xsdboolean not null;
+  lastname          : xsdboolean;
+  age               : xsdboolean;
+  course            : xsdboolean;
+  courseduration    : xsdboolean;
+  status            : xsdboolean;
+  gender            : xsdboolean;
+  dob               : xsdboolean;
+  lastchangedat     : xsdboolean;
+  locallastchangeat : xsdboolean;
+
+}
