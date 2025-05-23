@@ -1,0 +1,22 @@
+@EndUserText.label : 'Draft table for entity ZI_RESULT_U'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zrs_result_draft {
+
+  key mandt            : mandt not null;
+  key id               : sysuuid_x16 not null;
+  key course           : zrs_course_de_u not null;
+  key semester         : zrs_sem_de_u not null;
+  totalmarks           : abap.int1;
+  marks                : abap.int1;
+  mark                 : abap.int1;
+  overallcriticality   : abap.int1;
+  semresult            : zrs_semres_de_u;
+  coursedescription    : val_text;
+  semester_description : val_text;
+  semres_description   : val_text;
+  "%admin"             : include sych_bdl_draft_admin_inc;
+
+}
