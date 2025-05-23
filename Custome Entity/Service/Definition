@@ -1,0 +1,4 @@
+@EndUserText.label: 'Service Definition'
+define service ZUI_FLIGHTS {
+  expose ZRS_CUSTOM_ENTITY;
+}
