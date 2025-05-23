@@ -1,0 +1,10 @@
+@Metadata.layer: #CORE
+annotate entity ZA_STUDENT_ENTITY_RS with
+{
+  @EndUserText.label: 'Course'
+  Course;
+  @EndUserText.label: 'Course Duration'
+  CourseDuration;
+  @EndUserText.label: 'Set Student Status'
+  status;
+}
