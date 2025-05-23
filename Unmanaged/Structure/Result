@@ -1,0 +1,11 @@
+@EndUserText.label : 'Structure for Result'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+define structure zcs_result_u {
+
+  id        : xsdboolean;
+  course    : xsdboolean;
+  semester  : xsdboolean;
+  marks     : xsdboolean;
+  semresult : xsdboolean;
+
+}
