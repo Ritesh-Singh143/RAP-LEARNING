@@ -1,0 +1,60 @@
+@Metadata.layer: #PARTNER
+@Search.searchable: true
+@UI:{ headerInfo: { typeName: 'Student',
+                    typeNamePlural: 'Students',
+                    description.type: #STANDARD,
+                    title:{ type: #STANDARD, label: 'Student', value: 'Firstname'} },
+                 presentationVariant: [{ sortOrder: [{ by: 'Status', direction:  #ASC }] }] }
+annotate entity ZC_STUDENT_BGPF with
+{
+  @UI.facet: [{ id: 'Student',
+                purpose: #STANDARD,
+                type:#IDENTIFICATION_REFERENCE,
+                    label: 'Student',
+                    position: 10  }]
+
+  @UI:{ lineItem: [{ position:  10, label: 'Student ID'}],identification: [{ position: 10, label: 'Student ID' }] }
+  Id;
+  @EndUserText.label: 'First Name'
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 20, label: 'First Name'}],
+        identification: [{ position: 20, label: 'First Name' }],
+        selectionField: [{ position: 20 }] }
+  Firstname;
+  @EndUserText.label: 'Last Name'
+  @Search.defaultSearchElement: true
+  @UI:{ lineItem: [{ position: 30, label: 'Last Name' }],
+        identification: [{ position: 30, label: 'Last Name' }],
+        selectionField: [{ position: 30 }]}
+  Lastname;
+  @EndUserText.label: 'Age'
+  @UI:{ lineItem: [{ position: 40, label: 'Age' }],identification: [{ position: 40, label: 'Age' }] }
+  Age;
+  @EndUserText.label: 'Course'
+  @UI:{ lineItem: [{ position: 50, label: 'Course' }],identification: [{ position: 50, label: 'Course' }], selectionField: [{ position: 50 }] }
+  Course;
+  @EndUserText.label: 'Course Duration'
+  @UI:{ lineItem: [{ position: 60, label: 'Course Duration' }],identification: [{ position: 60, label: 'Course Duration' }] }
+  Courseduration;
+  @EndUserText.label: 'Status'
+  @UI:{ lineItem: [{ position: 70,label: 'Status' }],
+        identification: [{ position: 70,label: 'Status' }] }
+  Status;
+  @EndUserText.label: 'Gender'
+  @UI:{ lineItem: [{ position: 80, label: 'Gender' }],identification: [{ position: 80,label: 'Gender' }] }
+
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_GENDER_BGPF', element: 'Value' },
+                                                 distinctValues: true,
+                                                 additionalBinding: [{ localElement: 'GenderDescription', element: 'Description', usage: #FILTER_AND_RESULT }] }]
+  Gender;
+  @UI:{ identification: [{ position: 85, label: 'Gender Description' }] }
+  GenderDescription;
+  @EndUserText.label: 'DOB'
+  @UI:{ lineItem: [{ position: 90, label: 'DOB' }],identification: [{ position: 90,label: 'DOB' }] }
+  Dob;
+  @UI.hidden:true
+  Lastchangedat;
+  @UI.hidden:true
+  Locallastchangeat;
+
+}
