@@ -1,0 +1,4 @@
+@EndUserText.label: 'Service Definition'
+define service ZUI_STUDENT_BGPF {
+  expose ZC_STUDENT_BGPF;
+}
